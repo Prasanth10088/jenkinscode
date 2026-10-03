@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+    environment
+    {
+        awsregion='US-east-1'
+        s3bucket='my-tf-test-bucket20264567'
+        distributionid='E3FIEYCSM4MHNV'
+    } 
+
+    stages {
+        stage('git clone') {
+            steps {
+                git branch :'main' ,
+                credentialsId: 'github-access' ,
+                url : 'https://github.com/Prasanth10088/reactjs-app.git'
+            }
+        }
+        
+        
+        
+        stage('npm install') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        
+        
+        
+     
+        
+        stage('npm build') {
+            steps {
+                sh ' npm install && npm run build'
+            }
+        }
+        
+        
+        stage('s3 deploy') {
+            steps {
+                sh 'aws s3 sync dist/ s3://$s3bucket --delete'
+            }
+        }
+        stage('distribution id') {
+            steps {
+                sh 'aws cloudfront create-invalidation --distribution-id $distributionid --paths "/*"'
+            }
+        }
+
+        
+        
+
+
+        
+        
+
+        
+    }
+}
